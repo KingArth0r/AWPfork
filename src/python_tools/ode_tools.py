@@ -15,8 +15,32 @@ Ordinary Differential Equations (ODEs) Tools Library
 def euler_step(f ,t ,y ,h):
 	return y + h*f(t, y)
 
-def verlet_step(f, t, y, h):
-	return 0
+# Define the acceleration function for a two-body problem
+def acceleration(q, mu):
+    r_norm = np.linalg.norm(q)
+    return -mu * q / r_norm**3
+
+# Symplectic Verlet integrator function
+def verlet_step(q0, v0, mu, total_time, time_step):
+    num_steps = int(total_time / time_step)
+
+    q = np.zeros((num_steps + 1, len(q0)))
+    v = np.zeros((num_steps + 1, len(q0)))
+
+    q[0] = q0
+    v[0] = v0
+
+    for n in range(num_steps):
+        # Update the position using the current velocity
+        q[n + 1] = q[n] + time_step * v[n]
+
+        # Compute the acceleration at the updated position
+        a = acceleration(q[n + 1], mu)
+
+        # Update the velocity using the acceleration at the updated position
+        v[n + 1] = v[n] + time_step * a
+
+    return q, v
 
 def rk4_step( f, t, y, h ):
 	'''
