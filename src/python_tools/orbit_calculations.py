@@ -32,7 +32,7 @@ def interplanetary_porkchop(config):
         'step': 86400, # seconds to days
         'frame': 'ECLIPJ2000',
         'observer': 'SOLAR SYSTEM BARYCENTER',
-        'cutoff_v': 20.0,
+        'cutoff_v': 200.0,
         'c3_levels': None,
         'vinf_levels': None,
         'tof_levels': None,
@@ -117,7 +117,7 @@ def interplanetary_porkchop(config):
                     tof, tm, mu)
             except:
                 v_sc_depart_long = np.array([1000, 1000, 1000])
-                v_sc_arrive_short = np.array([1000, 1000, 1000])
+                v_sc_arrive_long = np.array([1000, 1000, 1000])
 
             C3_short = nt.norm(v_sc_depart_short - state_depart[3:])**2
             C3_long = nt.norm(v_sc_depart_long - state_depart[3:])**2
@@ -127,7 +127,7 @@ def interplanetary_porkchop(config):
             v_inf_short = nt.norm(v_sc_arrive_short - state_arrive[3:])
             v_inf_long = nt.norm(v_sc_arrive_long - state_arrive[3:])
 
-            if v_inf_short > _config['cutoff_v']: v_inf_short = _config['cufoff_v']
+            if v_inf_short > _config['cutoff_v']: v_inf_short = _config['cutoff_v']
             if v_inf_long > _config['cutoff_v']: v_inf_long = _config['cutoff_v']
 
             C3_shorts[na, nd] = C3_short
@@ -155,36 +155,43 @@ def interplanetary_porkchop(config):
                 _config['dv_levels'] = np.arange(3, 20, 0.5)
 
             lw = _config['lw']
-            figsize = _config['figsize']
+
+
             c3levels = _config['c3_levels']
             vinflevels = _config['vinf_levels']
             toflevels = _config['tof_levels']
             color1 = 'm'
             color2 = 'deepskyblue'
             color3 = 'white'
-            fig, ax = plt.subplots(figsize)
+
+
+            fig, ax = plt.subplots(figsize = _config['figsize'])
 
             #contours
-            c0 = ax.contour(C3_shorts, c3levels, color1, lw)
-            c1 = ax.contour(C3_longs, c3levels, color1, lw)
-            c2 = ax.contour(v_inf_shorts, vinflevels, color2, lw)
-            c3 = ax.contour(v_inf_longs, vinflevels, color2, lw)
-            c4 = ax.contour(tofs, toflevels, color3, lw*0.6)
+            c0 = ax.contour(C3_shorts, levels = c3levels, colors = color1, linewidths = lw)
+            c1 = ax.contour(C3_longs, levels = c3levels, colors = color1, linewidths = lw)
+            c2 = ax.contour(v_inf_shorts, levels = vinflevels, colors =color2, linewidths = lw)
+            c3 = ax.contour(v_inf_longs, levels = vinflevels, colors = color2, linewidths = lw)
+            c4 = ax.contour(tofs, levels = toflevels, colors = color3, linewidths = lw*0.6)
 
-            plt.clabel(c0, 0)
-            plt.clabel(c1, 1)
-            plt.clabel(c2, 2)
-            plt.clabel(c3, 3)
-            plt.clabel(c4, 4)
+            plt.clabel(c0, fmt = '%i')
+            plt.clabel(c1, fmt = '%i')
+            plt.clabel(c2, fmt = '%i')
+            plt.clabel(c3, fmt = '%i')
+            plt.clabel(c4, fmt = '%i')
             plt.plot([0], [0], color1)
             plt.plot([0], [0], color2)
             plt.plot([0], [0], color3)
-            '''
+
             plt.legend(
-                [ r'C3 ( $\dfrac{km^2}{s^2}$)', r'$V_{\infty}\; (\dfrac{km}{s})$',
-                  r'Time of Flight (days)'], (1.005, 1.01), 10)
-            ax.set_title(_config['title'], config['fontsize'])
-            '''
+                [ r'C3 ( $\dfrac{km^2}{s^2}$)',
+                  r'$V_{\infty}\; (\dfrac{km}{s})$',
+                  r'Time of Flight (days)'],
+                bbox_to_anchor = (1.005, 1.01),
+                fontsize = 10)
+
+            ax.set_title(_config['title'], fontsize = config['fontsize'])
+
             if _config['show']:
                 plt.show()
             if _config['filename'] is not None:
