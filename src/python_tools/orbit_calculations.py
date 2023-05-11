@@ -173,10 +173,12 @@ def interplanetary_porkchop(config):
             plt.plot([0], [0], color1)
             plt.plot([0], [0], color2)
             plt.plot([0], [0], color3)
+            '''
             plt.legend(
                 [ r'C3 ( $\dfrac{km^2}{s^2}$)', r'$V_{\infty}\; (\dfrac{km}{s})$',
                   r'Time of Flight (days)'], (1.005, 1.01), 10)
             ax.set_title(_config['title'], config['fontsize'])
+            '''
             if _config['show']:
                 plt.show()
             if _config['filename'] is not None:

@@ -53,8 +53,18 @@ def rk4_step( f, t, y, h ):
 
 	return y + h / 6.0 * ( k1 + 2 * k2 + 2 * k3 + k4 )
 
+
 methods = {
 	'rk4': rk4_step,
 	'euler': euler_step,
 	'verlet': verlet_step
 }
+
+
+
+def explicit_midpoint(f, t, y, h):
+    k1 = f(t,y)
+    k2 = f(t + 1/2 * h, y + 1/2 * h * k1)
+
+    return y + h(k2)
+
