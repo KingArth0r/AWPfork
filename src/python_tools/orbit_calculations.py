@@ -10,17 +10,24 @@ Orbit Calculations Library
 import numpy as np
 import math
 import spiceypy as spice
+import matplotlib.pyplot as plt
 
 # AWP library
 import numerical_tools as nt
 import lamberts_tools  as lt
 import planetary_data  as pd
 
+
+
+
+
+'''
 ECLIPSE_MAP = {
 	'umbra'   : ( ( 1,  3 ), ( -1, -3 ) ),
 	'penumbra': ( ( 2, -1 ), (  1, -2 ) ),
 	'either'  : ( ( 3,  2 ), ( -2, -3 ) )
 }
+'''
 
 def esc_v( r, mu = pd.earth[ 'mu' ] ):
 	'''
@@ -155,6 +162,7 @@ def vinfinity_match( planet0, planet1, v0_sc, et0, tof0, args = {} ):
 
 	return tof, v0_sc_depart, v1_sc_arrive
 
+'''
 def check_eclipse( et, r, body, frame = 'J2000', r_body = 0 ):
 	r_sun2body  = spice.spkpos(
 		str( body[ 'SPICE_ID' ] ), et, frame, 'LT', 'SUN' )[ 0 ]
@@ -295,4 +303,5 @@ def find_eclipses( ets, a, method = 'either', v = False, vv = False ):
 				)
 		print( '******** ECLIPSE SUMMARY END ********\n' )
 
-	return ecls
+	return ecls 
+'''
