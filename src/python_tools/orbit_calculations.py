@@ -16,9 +16,173 @@ import matplotlib.pyplot as plt
 import numerical_tools as nt
 import lamberts_tools  as lt
 import planetary_data  as pd
+import spice_tools as st
 
 
+def interplanetary_porkchop(config):
+    _config = {
+        'planet0': 'Earth',
+        'planet1': 'MARS BARYCENTER',
+        'departure0': '2020-07-01',
+        'departure1': '2020-09-01',
+        'arrival0': '2020-11-01',
+        'arrival1': '2022-01-24',
+        'mu': pd.sun['mu'],
+        'step': 1 / 86400, #seconds to days
+        'frame': 'ECLIPJ2000',
+        'observer': 'SOLAR SYSTEM BARYCENTER',
+        'cutoff_v': 20.0,
+        'c3_levels': None,
+        'vinf_levels': None,
+        'tof_levels': None,
+        'dv_levels': None,
+        'dv_cmap': 'RdPu_r',
+        'figsize': (20,10),
+        'lw': 1.5,
+        'title': 'Porkchop Plot',
+        'fontsize': 15,
+        'show': True,
+        'filename': None,
+        'filename_dv': None,
+        'dpi': 300,
+        'load': False
+    }
+    for key in config.keys():
+        _config[key] = config[key]
+    cutoff_c3 = _config['cutoff_v']**2
 
+    # arrays for arrivals and departures
+    et_departures = np.arange(
+        spice.utc2et(_config['departure0']),
+        spice.utc2et(_config['departure1']) + _config['step'],
+        _config['step'])
+    et_arrivals = np.arange(
+        spice.utc2et(_config['arrival0']),
+        spice.utc2et(_config['arrival11']) + _config['step'],
+        _config['step'])
+    # calculate the number of days
+    ds = len(et_departures)
+    as_ = len(et_arrivals)
+    total = ds*as_
+
+    print(f'Departure days: {ds}.')
+    print(f'Arrival days: {as_}.')
+    print(f'Total combinations: {total}')
+
+    #create arrays for C3, v_inf, and tof
+    C3_shorts = np.zeros((as_, ds))
+    C3_longs = np.zeros((as_, ds))
+    v_inf_shorts = np.zeros((as_, ds))
+    v_inf_longs = np.zeros((as_, ds))
+    tofs = np.zeros((as_, ds))
+
+    # create coords
+    X = np.arange(ds)
+    Y = np.arange(as_)
+
+    # loop through every combination
+    for na in Y:
+        for nd in X:
+            state_depart = st.calc_ephemeris(
+                _config['planet0'],
+                [et_departures[nd]],
+                _config['frame'], _config['observer'])[0]
+            state_arrive = st.calc_ephemeris(
+                _config['planet1'],
+                [et_arrivals[na]],
+                _config['frame'], _config['observer'])[0]
+
+            # calculate time of flight
+            tof = et_arrivals[na] - et_departures[nd]
+
+            tm = 1
+            mu = _config['mu']
+
+            try:
+                vc_sc_depart_short, v_sc_arrive_short = lt.lamberts_universal_variables(
+                    state_depart[:3], state_arrive[:3],
+                    tof, tm, mu)
+            except:
+                vc_sc_depart_short = np.array([1000, 1000, 1000])
+                vc_sc_arrive_short = np.array([1000, 1000, 1000])
+            try:
+                vc_sc_depart_long, v_sc_arrive_long = lt.lamberts_universal_variables(
+                    state_depart[:3],state_arrive[:3],
+                    tof, tm, mu)
+            except:
+                vc_sc_depart_long = np.array([1000, 1000, 1000])
+                vc_sc_arrive_short = np.array([1000, 1000, 1000])
+
+            C3_short = nt.norm(vc_sc_depart_short - state_depart[3:])**2
+            C3_long = nt.norm(vc_sc_depart_long - state_depart[3:])**2
+            if C3_short > cutoff_c3: C3_short = cutoff_c3
+            if C3_long > cutoff_c3: C3_long = cutoff_c3
+
+            v_inf_short = nt.norm(v_sc_arrive_short - state_arrive[3:])
+            v_inf_long = nt.norm(v_sc_arrive_long - state_arrive[3:])
+
+            if v_inf_short > _config['cutoff_v']: v_inf_short = _config['cufoff_v']
+            if v_inf_long > _config['cutoff_v']: v_inf_long = _config['cutoff_v']
+
+            C3_shorts[na, nd] = C3_short
+            C3_longs[na, nd] = C3_long
+            v_inf_shorts[na, nd] = v_inf_short
+            v_inf_longs[na,nd] = v_inf_long
+            tofs[na, nd] = tof
+
+            print("Made it") #print statement for debugging
+
+            tofs /= (3600.0*24.0) #convert from seconds to days
+
+            # total delta V
+            dv_shorts = v_inf_shorts + np.sqrt(C3_shorts)
+            dv_longs = v_inf_longs + np.sqrt(C3_longs)
+
+            # levels - creating margins of porkchop plot, feel free to change the numbers
+            if _config['c3_levels'] is None:
+                _config['c3_levels'] = np.arange(10, 50, 2)
+            if _config['vinf_levels'] is None:
+                _config['vinf_levels'] = np.arange(0, 15, 1)
+            if _config['tof_levels'] is None:
+                _config['tof_levels'] = np.arange(100, 500, 20)
+            if _config['dv_levels'] is None:
+                _config['dv_levels'] = np.arange(3, 20, 0.5)
+
+            lw = _config['lw']
+            figsize = _config['figsize']
+            c3levels = _config['c3_levels']
+            vinflevels = _config['vinf_levels']
+            toflevels = _config['tof_levels']
+            color1 = 'm'
+            color2 = 'deepskyblue'
+            color3 = 'white'
+            fig, ax = plt.subplots(figsize)
+
+            #contours
+            c0 = ax.contour(C3_shorts, c3levels, color1, lw)
+            c1 = ax.contour(C3_longs, c3levels, color1, lw)
+            c2 = ax.contour(v_inf_shorts, vinflevels, color2, lw)
+            c3 = ax.contour(v_inf_longs, vinflevels, color2, lw)
+            c4 = ax.contour(tofs, toflevels, color3, lw*0.6)
+
+            plt.clabel(c0, 0)
+            plt.clabel(c1, 1)
+            plt.clabel(c2, 2)
+            plt.clabel(c3, 3)
+            plt.clabel(c4, 4)
+            plt.plot([0], [0], color1)
+            plt.plot([0], [0], color2)
+            plt.plot([0], [0], color3)
+            plt.legend(
+                [ r'C3 ( $\dfrac{km^2}{s^2}$)', r'$V_{\infty}\; (\dfrac{km}{s})$',
+                  r'Time of Flight (days)'], (1.005, 1.01), 10)
+            ax.set_title(_config['title'], config['fontsize'])
+            if _config['show']:
+                plt.show()
+            if _config['filename'] is not None:
+                plt.savefig(_config['filename'], _config['dpi'])
+                print(f"Saved {_config['filename']}")
+            plt.close()
 
 
 '''
