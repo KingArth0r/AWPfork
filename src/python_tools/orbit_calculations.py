@@ -14,10 +14,11 @@ import matplotlib.pyplot as plt
 
 # AWP library
 import numerical_tools as nt
-import lamberts_tools  as lt
-import planetary_data  as pd
+import lamberts_tools as lt
+import planetary_data as pd
+import spice_data
 import spice_tools as st
-
+import spice_data as sd
 
 def interplanetary_porkchop(config):
     _config = {
@@ -28,7 +29,7 @@ def interplanetary_porkchop(config):
         'arrival0': '2020-11-01',
         'arrival1': '2022-01-24',
         'mu': pd.sun['mu'],
-        'step': 1 / 86400, #seconds to days
+        'step': 86400, # seconds to days
         'frame': 'ECLIPJ2000',
         'observer': 'SOLAR SYSTEM BARYCENTER',
         'cutoff_v': 20.0,
@@ -47,6 +48,11 @@ def interplanetary_porkchop(config):
         'dpi': 300,
         'load': False
     }
+
+    spice.furnsh(sd.leapseconds_kernel)
+    spice.furnsh(sd.pck00010)
+    spice.furnsh(sd.de432)
+
     for key in config.keys():
         _config[key] = config[key]
     cutoff_c3 = _config['cutoff_v']**2
@@ -58,7 +64,7 @@ def interplanetary_porkchop(config):
         _config['step'])
     et_arrivals = np.arange(
         spice.utc2et(_config['arrival0']),
-        spice.utc2et(_config['arrival11']) + _config['step'],
+        spice.utc2et(_config['arrival1']) + _config['step'],
         _config['step'])
     # calculate the number of days
     ds = len(et_departures)
@@ -99,22 +105,22 @@ def interplanetary_porkchop(config):
             mu = _config['mu']
 
             try:
-                vc_sc_depart_short, v_sc_arrive_short = lt.lamberts_universal_variables(
+                v_sc_depart_short, v_sc_arrive_short = lt.lamberts_universal_variables(
                     state_depart[:3], state_arrive[:3],
                     tof, tm, mu)
             except:
-                vc_sc_depart_short = np.array([1000, 1000, 1000])
-                vc_sc_arrive_short = np.array([1000, 1000, 1000])
+                v_sc_depart_short = np.array([1000, 1000, 1000])
+                v_sc_arrive_short = np.array([1000, 1000, 1000])
             try:
-                vc_sc_depart_long, v_sc_arrive_long = lt.lamberts_universal_variables(
+                v_sc_depart_long, v_sc_arrive_long = lt.lamberts_universal_variables(
                     state_depart[:3],state_arrive[:3],
                     tof, tm, mu)
             except:
-                vc_sc_depart_long = np.array([1000, 1000, 1000])
-                vc_sc_arrive_short = np.array([1000, 1000, 1000])
+                v_sc_depart_long = np.array([1000, 1000, 1000])
+                v_sc_arrive_short = np.array([1000, 1000, 1000])
 
-            C3_short = nt.norm(vc_sc_depart_short - state_depart[3:])**2
-            C3_long = nt.norm(vc_sc_depart_long - state_depart[3:])**2
+            C3_short = nt.norm(v_sc_depart_short - state_depart[3:])**2
+            C3_long = nt.norm(v_sc_depart_long - state_depart[3:])**2
             if C3_short > cutoff_c3: C3_short = cutoff_c3
             if C3_long > cutoff_c3: C3_long = cutoff_c3
 
