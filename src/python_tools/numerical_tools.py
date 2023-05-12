@@ -150,7 +150,7 @@ def cart2lat( rs, frame_from = None, frame_to = None, ets = None, deg = True ):
 
 	return latlons
 
-def propagate_ode( ode, state0, tspan, dt, method = 'euler' ):
+def propagate_ode( ode, state0, tspan, dt, method ):
 	func        = ot.methods[ method ]
 	ets         = np.arange( 0, tspan, dt )
 	steps       = len( ets )

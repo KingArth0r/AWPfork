@@ -11,6 +11,7 @@ import numpy as np
 import math
 import spiceypy as spice
 import matplotlib.pyplot as plt
+import lamberthub as lh
 
 # AWP library
 import numerical_tools as nt
@@ -46,7 +47,8 @@ def interplanetary_porkchop(config):
         'filename': 'C:/Users/space/OneDrive/Documents/UW/514/Final Project Code/porkchop.png',
         'filename_dv': None,
         'dpi': 300,
-        'load': False
+        'load': False,
+        'integrator': lh.izzo2015
     }
 
     spice.furnsh(sd.leapseconds_kernel) # keeps track of leapseconds
@@ -109,17 +111,26 @@ def interplanetary_porkchop(config):
 
             # try lambert's solver. If lambert's solver fails, exception is thrown
             try:
+                '''
                 v_sc_depart_short, v_sc_arrive_short = lt.lamberts_universal_variables(
                     state_depart[ :3 ], state_arrive[ :3 ],
                     tof, {'tm' : 1, 'mu' : _config[ 'mu' ]})
+                '''
+                v_sc_depart_short, v_sc_arrive_short = _config['integrator'](_config['mu'], state_depart[:3],
+                                                        state_arrive[ :3 ], tof, prograde= True, full_output= False)
             except Exception as e:
                 print(e)
                 v_sc_depart_short = np.array([1000, 1000, 1000])
                 v_sc_arrive_short = np.array([1000, 1000, 1000])
             try:
+                '''
                 v_sc_depart_long, v_sc_arrive_long = lt.lamberts_universal_variables(
                     state_depart[ :3 ],state_arrive[ :3 ],
                     tof, {'tm' : -1, 'mu' : _config[ 'mu' ]})
+                '''
+
+                v_sc_depart_long, v_sc_arrive_long = _config['integrator'](_config['mu'], state_depart[:3],
+                                                        state_arrive[:3], tof, prograde=False, full_output=False)
             except Exception as e:
                 print(e)
                 v_sc_depart_long = np.array([1000, 1000, 1000])
@@ -142,7 +153,7 @@ def interplanetary_porkchop(config):
             v_inf_longs[na,nd] = v_inf_long
             tofs[na, nd] = tof
 
-        print("Made it") #print statement for debugging
+        #print("Made it") #print statement for debugging
 
     tofs /= (3600.0*24.0) #convert from seconds to days
 
@@ -197,10 +208,10 @@ def interplanetary_porkchop(config):
         fontsize = 10)
 
     ax.set_title(_config['title'], fontsize = _config['fontsize'])
-    plt.show()
-    '''
+
     if _config['show']:
-        
+        plt.show()
+    '''   
     if _config['filename'] is not None:
         plt.savefig(_config['filename'], dpi = _config['dpi'])
         print(f"Saved {_config['filename']}")
