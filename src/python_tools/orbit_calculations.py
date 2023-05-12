@@ -119,7 +119,7 @@ def interplanetary_porkchop(config):
             try:
                 v_sc_depart_long, v_sc_arrive_long = lt.lamberts_universal_variables(
                     state_depart[ :3 ],state_arrive[ :3 ],
-                    tof, {'tm' : 1, 'mu' : _config[ 'mu' ]})
+                    tof, {'tm' : -1, 'mu' : _config[ 'mu' ]})
             except Exception as e:
                 print(e)
                 v_sc_depart_long = np.array([1000, 1000, 1000])
