@@ -38,7 +38,7 @@ def interplanetary_porkchop(config):
         'tof_levels': None,
         'dv_levels': None,
         'dv_cmap': 'RdPu_r',
-        'figsize': (12,20),
+        'figsize': (10,20),
         'lw': 1.5,
         'title': 'Porkchop Plot',
         'fontsize': 15,
@@ -205,6 +205,30 @@ def interplanetary_porkchop(config):
         plt.savefig(_config['filename'], dpi = _config['dpi'])
         print(f"Saved {_config['filename']}")
     '''
+    plt.close()
+
+    # Delta V plot
+
+    fig, ax = plt.subplots(figsize = _config['figsize'])
+    c0 = ax.contour(
+        dv_shorts, levels = _config['dv_levels'],
+        cmap = _config['dv_cmap'], linewidths = lw)
+    c1 = ax.contour(
+        dv_longs, levels=_config['dv_levels'],
+        cmap=_config['dv_cmap'], linewidths=lw)
+    c2 = ax.contour(tofs, levels = _config['tof_levels'], colors = 'c', linewidths = lw * 0.6)
+    plt.clabel(c0, fmt='%.1f')
+    plt.clabel(c1, fmt='%.1f')
+    plt.clabel(c2, fmt='%i')
+
+
+    ax.set_title(_config['title'], fontsize = _config['fontsize'])
+    ax.set_ylabel('Arrival (Days past %s)' % _config['arrival0'], fontsize = _config['fontsize'])
+    ax.set_xlabel('Departure (Days past %s)' % _config['departure0'], fontsize = _config['fontsize'])
+
+    if _config['show']:
+        plt.show()
+
     plt.close()
 
 
