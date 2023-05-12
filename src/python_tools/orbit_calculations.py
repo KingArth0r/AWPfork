@@ -191,12 +191,14 @@ def interplanetary_porkchop(config):
         fontsize = 10)
 
     ax.set_title(_config['title'], fontsize = _config['fontsize'])
-
+    plt.show()
+    '''
     if _config['show']:
-        plt.show()
+        
     if _config['filename'] is not None:
         plt.savefig(_config['filename'], dpi = _config['dpi'])
         print(f"Saved {_config['filename']}")
+    '''
     plt.close()
 
 
