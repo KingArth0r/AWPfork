@@ -43,7 +43,7 @@ def interplanetary_porkchop(config):
         'title': 'Porkchop Plot',
         'fontsize': 15,
         'show': True,
-        'filename': None,
+        'filename': 'C:/Users/space/OneDrive/Documents/UW/514/Final Project Code/porkchop.png',
         'filename_dv': None,
         'dpi': 300,
         'load': False
@@ -136,68 +136,68 @@ def interplanetary_porkchop(config):
             v_inf_longs[na,nd] = v_inf_long
             tofs[na, nd] = tof
 
-            print("Made it") #print statement for debugging
+        print("Made it") #print statement for debugging
 
-            tofs /= (3600.0*24.0) #convert from seconds to days
+    tofs /= (3600.0*24.0) #convert from seconds to days
 
-            # total delta V
-            dv_shorts = v_inf_shorts + np.sqrt(C3_shorts)
-            dv_longs = v_inf_longs + np.sqrt(C3_longs)
+    # total delta V
+    dv_shorts = v_inf_shorts + np.sqrt(C3_shorts)
+    dv_longs = v_inf_longs + np.sqrt(C3_longs)
 
-            # levels - creating margins of porkchop plot, feel free to change the numbers
-            if _config['c3_levels'] is None:
-                _config['c3_levels'] = np.arange(10, 50, 2)
-            if _config['vinf_levels'] is None:
-                _config['vinf_levels'] = np.arange(0, 15, 1)
-            if _config['tof_levels'] is None:
-                _config['tof_levels'] = np.arange(100, 500, 20)
-            if _config['dv_levels'] is None:
-                _config['dv_levels'] = np.arange(3, 20, 0.5)
+    # levels - creating margins of porkchop plot, feel free to change the numbers
+    if _config['c3_levels'] is None:
+        _config['c3_levels'] = np.arange(10, 50, 2)
+    if _config['vinf_levels'] is None:
+        _config['vinf_levels'] = np.arange(0, 15, 1)
+    if _config['tof_levels'] is None:
+        _config['tof_levels'] = np.arange(100, 500, 20)
+    if _config['dv_levels'] is None:
+        _config['dv_levels'] = np.arange(3, 20, 0.5)
 
-            lw = _config['lw']
-
-
-            c3levels = _config['c3_levels']
-            vinflevels = _config['vinf_levels']
-            toflevels = _config['tof_levels']
-            color1 = 'm'
-            color2 = 'deepskyblue'
-            color3 = 'white'
+    lw = _config['lw']
 
 
-            fig, ax = plt.subplots(figsize = _config['figsize'])
+    c3levels = _config['c3_levels']
+    vinflevels = _config['vinf_levels']
+    toflevels = _config['tof_levels']
+    color1 = 'm'
+    color2 = 'deepskyblue'
+    color3 = 'white'
 
-            #contours
-            c0 = ax.contour(C3_shorts, levels = c3levels, colors = color1, linewidths = lw)
-            c1 = ax.contour(C3_longs, levels = c3levels, colors = color1, linewidths = lw)
-            c2 = ax.contour(v_inf_shorts, levels = vinflevels, colors =color2, linewidths = lw)
-            c3 = ax.contour(v_inf_longs, levels = vinflevels, colors = color2, linewidths = lw)
-            c4 = ax.contour(tofs, levels = toflevels, colors = color3, linewidths = lw*0.6)
 
-            plt.clabel(c0, fmt = '%i')
-            plt.clabel(c1, fmt = '%i')
-            plt.clabel(c2, fmt = '%i')
-            plt.clabel(c3, fmt = '%i')
-            plt.clabel(c4, fmt = '%i')
-            plt.plot([0], [0], color1)
-            plt.plot([0], [0], color2)
-            plt.plot([0], [0], color3)
+    fig, ax = plt.subplots(figsize = _config['figsize'])
 
-            plt.legend(
-                [ r'C3 ( $\dfrac{km^2}{s^2}$)',
-                  r'$V_{\infty}\; (\dfrac{km}{s})$',
-                  r'Time of Flight (days)'],
-                bbox_to_anchor = (1.005, 1.01),
-                fontsize = 10)
+    #contours
+    c0 = ax.contour(C3_shorts, levels = c3levels, colors = color1, linewidths = lw)
+    c1 = ax.contour(C3_longs, levels = c3levels, colors = color1, linewidths = lw)
+    c2 = ax.contour(v_inf_shorts, levels = vinflevels, colors =color2, linewidths = lw)
+    c3 = ax.contour(v_inf_longs, levels = vinflevels, colors = color2, linewidths = lw)
+    c4 = ax.contour(tofs, levels = toflevels, colors = color3, linewidths = lw*0.6)
 
-            ax.set_title(_config['title'], fontsize = config['fontsize'])
+    plt.clabel(c0, fmt = '%i')
+    plt.clabel(c1, fmt = '%i')
+    plt.clabel(c2, fmt = '%i')
+    plt.clabel(c3, fmt = '%i')
+    plt.clabel(c4, fmt = '%i')
+    plt.plot([0], [0], color1)
+    plt.plot([0], [0], color2)
+    plt.plot([0], [0], color3)
 
-            if _config['show']:
-                plt.show()
-            if _config['filename'] is not None:
-                plt.savefig(_config['filename'], _config['dpi'])
-                print(f"Saved {_config['filename']}")
-            plt.close()
+    plt.legend(
+        [ r'C3 ( $\dfrac{km^2}{s^2}$)',
+            r'$V_{\infty}\; (\dfrac{km}{s})$',
+            r'Time of Flight (days)'],
+        bbox_to_anchor = (1.005, 1.01),
+        fontsize = 10)
+
+    ax.set_title(_config['title'], fontsize = _config['fontsize'])
+
+    if _config['show']:
+        plt.show()
+    if _config['filename'] is not None:
+        plt.savefig(_config['filename'], dpi = _config['dpi'])
+        print(f"Saved {_config['filename']}")
+    plt.close()
 
 
 '''
