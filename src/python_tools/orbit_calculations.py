@@ -29,16 +29,16 @@ def interplanetary_porkchop(config):
         'arrival0': '2020-11-01',
         'arrival1': '2022-01-24',
         'mu': pd.sun['mu'],
-        'step': 86400, # seconds to days
+        'step': 86400, # Seconds to days (default step is 1 day)
         'frame': 'ECLIPJ2000',
         'observer': 'SOLAR SYSTEM BARYCENTER',
-        'cutoff_v': 200.0,
+        'cutoff_v': 20.0,
         'c3_levels': None,
         'vinf_levels': None,
         'tof_levels': None,
         'dv_levels': None,
         'dv_cmap': 'RdPu_r',
-        'figsize': (20,10),
+        'figsize': (12,20),
         'lw': 1.5,
         'title': 'Porkchop Plot',
         'fontsize': 15,
@@ -49,13 +49,13 @@ def interplanetary_porkchop(config):
         'load': False
     }
 
-    spice.furnsh(sd.leapseconds_kernel)
+    spice.furnsh(sd.leapseconds_kernel) # keeps track of leapseconds
     spice.furnsh(sd.pck00010)
     spice.furnsh(sd.de432)
 
     for key in config.keys():
         _config[key] = config[key]
-    cutoff_c3 = _config['cutoff_v']**2
+    cutoff_c3 = _config['cutoff_v']**2 # cutoff_c3 should be escape velocity ** 2
 
     # arrays for arrivals and departures
     et_departures = np.arange(
@@ -67,9 +67,9 @@ def interplanetary_porkchop(config):
         spice.utc2et(_config['arrival1']) + _config['step'],
         _config['step'])
     # calculate the number of days
-    ds = len(et_departures)
-    as_ = len(et_arrivals)
-    total = ds*as_
+    ds = len(et_departures) # departure days
+    as_ = len(et_arrivals) # arrival days
+    total = ds*as_ # total days
 
     print(f'Departure days: {ds}.')
     print(f'Arrival days: {as_}.')
@@ -89,11 +89,14 @@ def interplanetary_porkchop(config):
     # loop through every combination
     for na in Y:
         for nd in X:
-            state_depart = st.calc_ephemeris(
+            # state of planet0 (Earth) at departure
+            state_depart = st.load_ephemeris(
                 _config['planet0'],
                 [et_departures[nd]],
                 _config['frame'], _config['observer'])[0]
-            state_arrive = st.calc_ephemeris(
+
+            # state of planet1 (Mars) at arrival
+            state_arrive = st.load_ephemeris(
                 _config['planet1'],
                 [et_arrivals[na]],
                 _config['frame'], _config['observer'])[0]
@@ -104,18 +107,21 @@ def interplanetary_porkchop(config):
             tm = 1
             mu = _config['mu']
 
+            # try lambert's solver. If lambert's solver fails, exception is thrown
             try:
                 v_sc_depart_short, v_sc_arrive_short = lt.lamberts_universal_variables(
-                    state_depart[:3], state_arrive[:3],
-                    tof, tm, mu)
-            except:
+                    state_depart[ :3 ], state_arrive[ :3 ],
+                    tof, {'tm' : 1, 'mu' : _config[ 'mu' ]})
+            except Exception as e:
+                print(e)
                 v_sc_depart_short = np.array([1000, 1000, 1000])
                 v_sc_arrive_short = np.array([1000, 1000, 1000])
             try:
                 v_sc_depart_long, v_sc_arrive_long = lt.lamberts_universal_variables(
-                    state_depart[:3],state_arrive[:3],
-                    tof, tm, mu)
-            except:
+                    state_depart[ :3 ],state_arrive[ :3 ],
+                    tof, {'tm' : 1, 'mu' : _config[ 'mu' ]})
+            except Exception as e:
+                print(e)
                 v_sc_depart_long = np.array([1000, 1000, 1000])
                 v_sc_arrive_long = np.array([1000, 1000, 1000])
 

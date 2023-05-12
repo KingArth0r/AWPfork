@@ -5,7 +5,7 @@ https://www.youtube.com/c/AlfonsoGonzalezSpaceEngineering
 
 SPICE convenience functions using SpiceyPy
 '''
-
+import numpy as np
 # 3rd party libraries
 import spiceypy as spice
 from numpy import array, zeros
@@ -25,6 +25,12 @@ def calc_ephemeris( target, ets, frame, observer ):
 			states[ n ] = spice.spkgeo( target, ets[ n ], frame, observer )[ 0 ]
 		return states
 
+# writeen by Jimmy
+def load_ephemeris(target, times, frame, observer):
+	if type( target ) == str:
+		return np.array( spice.spkezr( target, times, frame, 'NONE', observer )[ 0 ] )
+	else:
+		return np.array(spice.spkez(target, times, frame, 'NONE', observer)[0])
 def write_bsp( ets, states, args = {} ):
 	'''
 	Write or append to a BSP / SPK kernel from a NumPy array
