@@ -4,6 +4,7 @@ https://github.com/alfonsogonzalez/AWP
 https://www.youtube.com/c/AlfonsoGonzalezSpaceEngineering
 
 Planetary Data Library
+contains useful data on planets, should you want to change your origin or destination
 '''
 
 # gravitational constant

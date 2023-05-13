@@ -1,17 +1,22 @@
+'''
+main.py --- Primary tester file.
 
+This is the tester that generates the time data for our plots.
+This is computationally expensive - it took Jimmy's machine about 3 hours to run.
+
+Attribution - Jimmy
+'''
 import orbit_calculations as ob
 import lamberthub as lh
 import numpy as np
 import time
-
-print([solver.__name__ for solver in lh.ALL_SOLVERS])
 
 X = np.linspace(.25, 1, 20)
 
 
 # test gooding 1990
 Y = np.zeros(20)
-'''
+
 for k in range(len(X)):
     print('Gooding iteration:', k)
     tick = time.perf_counter()
@@ -22,7 +27,7 @@ for k in range(len(X)):
     Y[k] = tock - tick # time passed
 
 np.savetxt("gooding1990.csv", [X,Y], delimiter=",")
-'''
+
 # test Avanzini 2008
 
 for k in range(len(X)):
